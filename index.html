@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover,user-scalable=no">
+<title>ระบบรายงานสถานการณ์อุทกภัย</title>
+<meta name="theme-color" content="#1565c0">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="รายงานอุทกภัย">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="icons/icon-192.png">
+<link rel="apple-touch-icon" href="icons/icon-192.png">
+<style>
+  html, body { margin: 0; height: 100%; background: #0d47a1; overflow: hidden;
+    font-family: "Noto Sans Thai", "Sarabun", Arial, sans-serif; }
+  #frame { position: fixed; inset: 0; width: 100%; height: 100%; border: 0; background: #eef2f7; }
+  .overlay { position: fixed; inset: 0; display: flex; flex-direction: column;
+    align-items: center; justify-content: center; gap: 14px; padding: 24px; text-align: center;
+    color: #fff; background: linear-gradient(135deg, #0d47a1, #1976d2 55%, #42a5f5); z-index: 10; }
+  .overlay.hidden { display: none; }
+  .overlay img { width: 96px; height: 96px; border-radius: 22px; box-shadow: 0 8px 24px rgba(0,0,0,.3); }
+  .overlay h1 { margin: 0; font-size: 20px; }
+  .overlay p { margin: 0; opacity: .9; font-size: 14px; }
+  .spin { width: 34px; height: 34px; border: 4px solid rgba(255,255,255,.35);
+    border-top-color: #fff; border-radius: 50%; animation: r 1s linear infinite; }
+  @keyframes r { to { transform: rotate(360deg); } }
+  button { border: 0; border-radius: 10px; padding: 12px 22px; font-size: 16px; font-family: inherit;
+    font-weight: 600; background: #fff; color: #1565c0; cursor: pointer; }
+</style>
+</head>
+<body>
+
+<div id="loading" class="overlay">
+  <img src="icons/icon-192.png" alt="">
+  <h1>ระบบรายงานสถานการณ์อุทกภัย</h1>
+  <div class="spin"></div>
+  <p>กำลังเปิดระบบ...</p>
+</div>
+
+<div id="offline" class="overlay hidden">
+  <img src="icons/icon-192.png" alt="">
+  <h1>ไม่มีสัญญาณอินเทอร์เน็ต</h1>
+  <p>ระบบต้องเชื่อมต่ออินเทอร์เน็ตเพื่อดึงและบันทึกข้อมูล</p>
+  <button onclick="start()">🔄 ลองอีกครั้ง</button>
+</div>
+
+<iframe id="frame" title="ระบบรายงานสถานการณ์อุทกภัย"
+  allow="geolocation; camera; clipboard-write; fullscreen"
+  referrerpolicy="no-referrer-when-downgrade"></iframe>
+
+<script src="config.js"></script>
+<script>
+  const frame = document.getElementById('frame');
+  const loading = document.getElementById('loading');
+  const offline = document.getElementById('offline');
+  let timer = null;
+
+  function start() {
+    offline.classList.add('hidden');
+    if (!navigator.onLine) { loading.classList.add('hidden'); offline.classList.remove('hidden'); return; }
+    loading.classList.remove('hidden');
+    frame.src = APP_URL;
+    clearTimeout(timer);
+    // ถ้าโหลดนานเกิน 25 วินาที ให้ขึ้นหน้าลองใหม่
+    timer = setTimeout(function () {
+      loading.classList.add('hidden'); offline.classList.remove('hidden');
+    }, 25000);
+  }
+
+  frame.addEventListener('load', function () {
+    clearTimeout(timer);
+    setTimeout(function () { loading.classList.add('hidden'); }, 400);
+  });
+
+  window.addEventListener('online', start);
+  window.addEventListener('offline', function () { offline.classList.remove('hidden'); });
+
+  if ('serviceWorker' in navigator) {
+    navigator.serviceWorker.register('sw.js').catch(function () {});
+  }
+
+  start();
+</script>
+</body>
+</html>

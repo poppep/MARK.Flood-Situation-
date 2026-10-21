@@ -1,0 +1,33 @@
+// Service worker: เก็บแค่ "เปลือกแอป" ไว้เปิดได้แม้ออฟไลน์
+// ตัวข้อมูลจริงอยู่ใน Apps Script จึงต้องใช้อินเทอร์เน็ตเสมอ
+const CACHE = 'flood-shell-v1';
+const SHELL = ['./', './index.html', './config.js', './manifest.webmanifest',
+  './icons/icon-192.png', './icons/icon-512.png'];
+
+self.addEventListener('install', function (e) {
+  e.waitUntil(caches.open(CACHE).then(function (c) { return c.addAll(SHELL); }));
+  self.skipWaiting();
+});
+
+self.addEventListener('activate', function (e) {
+  e.waitUntil(
+    caches.keys().then(function (keys) {
+      return Promise.all(keys.filter(function (k) { return k !== CACHE; })
+        .map(function (k) { return caches.delete(k); }));
+    })
+  );
+  self.clients.claim();
+});
+
+self.addEventListener('fetch', function (e) {
+  const req = e.request;
+  if (req.method !== 'GET' || new URL(req.url).origin !== location.origin) return;
+  // network-first: ได้ไฟล์ใหม่เสมอเมื่อออนไลน์ ตกมาใช้ cache เมื่อออฟไลน์
+  e.respondWith(
+    fetch(req).then(function (res) {
+      const copy = res.clone();
+      caches.open(CACHE).then(function (c) { c.put(req, copy); });
+      return res;
+    }).catch(function () { return caches.match(req).then(function (r) { return r || caches.match('./index.html'); }); })
+  );
+});

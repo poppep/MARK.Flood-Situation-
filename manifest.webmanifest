@@ -1,0 +1,17 @@
+{
+  "name": "ระบบรายงานสถานการณ์อุทกภัย",
+  "short_name": "รายงานอุทกภัย",
+  "description": "ระบบรายงานสถานการณ์อุทกภัย สสอ.สทิงพระ",
+  "lang": "th",
+  "start_url": "./index.html",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#0d47a1",
+  "theme_color": "#1565c0",
+  "icons": [
+    { "src": "icons/icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
+    { "src": "icons/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
+    { "src": "icons/maskable-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+  ]
+}
